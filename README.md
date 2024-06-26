@@ -1,6 +1,6 @@
 # Install AWS VPN Client on Debian Bookworm
 
-Install `awsvpnclient` on Debian Bookworm and takes care of fixing all the issues
+Installs `awsvpnclient` on Debian Bookworm and takes care of fixing all the issues
 the package has.
 
 ## Install ansible
@@ -9,7 +9,7 @@ Run:
 
 ```sh
 sudo apt install pipx
-pipx install ansible
+pipx install --include-deps ansible
 pipx ensurepath
 ```
 
