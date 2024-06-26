@@ -22,7 +22,9 @@ Restart your shell or do `source ~/.profile`.
 ```
 
 Enter your sudo password (BECOME password). Let the playbook run. Once the
-playbook is done running, you should have a working AWS VPN Client install.
+playbook is done running, either restart your computer or re-login into
+your desktop session (to reload /etc/profile.d) and you should have a working
+AWS VPN Client install.
 
 ## Fixes applied
 
