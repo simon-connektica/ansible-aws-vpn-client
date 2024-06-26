@@ -10,7 +10,9 @@
 
     - name: Install libssl 1.1 if not installed
       ansible.builtin.apt:
-        deb: http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb10u6_amd64.deb
+        # Not ideal at all, could try to add buster as an apt source and install libssl 1.1 from buster but that
+        # could result in a Franken Debian: https://wiki.debian.org/DontBreakDebian#Don.27t_make_a_FrankenDebian
+        deb: https://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb10u6_amd64.deb
       when: "'libssl1.1' not in ansible_facts.packages"
 
     - name: Create keyrings folder
@@ -18,7 +20,7 @@
         path: /etc/apt/keyrings
         state: directory
 
-    - name: Add AWS VPN Client apt repository key
+    - name: Copy AWS VPN Client apt repository key
       ansible.builtin.copy:
         src: awsvpnclient_public_key.asc
         dest: /etc/apt/keyrings/awsvpnclient_public_key.asc
@@ -53,7 +55,7 @@
         path: /etc/systemd/system/awsvpnclient.service.d
         state: directory
 
-    - name: Create systemd override file
+    - name: Copy systemd override file
       ansible.builtin.copy:
         src: override.conf
         dest: /etc/systemd/system/awsvpnclient.service.d/override.conf
