@@ -1,0 +1,65 @@
+#!/usr/bin/env -S ansible-playbook --ask-become-pass
+---
+- hosts: 127.0.0.1
+  connection: local
+  become: true
+  tasks:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Install libssl 1.1 if not installed
+      ansible.builtin.apt:
+        deb: http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.1_1.1.1n-0+deb10u6_amd64.deb
+      when: "'libssl1.1' not in ansible_facts.packages"
+
+    - name: Create keyrings folder
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+
+    - name: Add AWS VPN Client apt repository key
+      ansible.builtin.copy:
+        src: awsvpnclient_public_key.asc
+        dest: /etc/apt/keyrings/awsvpnclient_public_key.asc
+        mode: "0644"
+        force: true
+
+    - name: Add AWS VPN Client deb repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/awsvpnclient_public_key.asc] https://d20adtppz83p9s.cloudfront.net/GTK/latest/debian-repo ubuntu-20.04 main"
+        filename: aws-vpn-client
+        state: present
+
+    - name: Install AWS VPN Client
+      ansible.builtin.apt:
+        name: awsvpnclient
+        state: latest
+        update_cache: yes
+
+    - name: Create Symlink to fix Desktop entry
+      ansible.builtin.file:
+        src: "/opt/awsvpnclient/AWS VPN Client"
+        dest: /opt/awsvpnclient/AWSVPNClient
+        state: link
+
+    - name: Update /etc/profile.d for GUI
+      ansible.builtin.copy:
+        src: awsvpnclient.sh
+        dest: /etc/profile.d/awsvpnclient.sh
+
+    - name: Create systemd override folder
+      ansible.builtin.file:
+        path: /etc/systemd/system/awsvpnclient.service.d
+        state: directory
+
+    - name: Create systemd override file
+      ansible.builtin.copy:
+        src: override.conf
+        dest: /etc/systemd/system/awsvpnclient.service.d/override.conf
+
+    - name: Restart daemon
+      ansible.builtin.systemd_service:
+        name: awsvpnclient.service
+        daemon_reload: true
+        state: restarted
